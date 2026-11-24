@@ -42,7 +42,7 @@ button:active{transform:translateY(2px)}
 <div id="ti" class="ov"><h1>PIXEL<br>REALM</h1>
 <p>Jelajahi pulau, tebas monster, kumpulkan gem, buka peti harta, dan kalahkan 👑 Raja Slime!</p>
 <p style="opacity:.75">Geser jempol di layar / joystick = jalan<br>Serangan otomatis, ⚔️ = tebas manual<br>Tombol biru = skill (PC: Q/E/R)<br>PC: WASD / panah + Spasi</p>
-<p id="gf" style="color:#ffd23f;min-height:18px"></p><p id="bs"></p><button id="ws" style="background:#9be7ff;border-bottom-color:#4a90b8">🗺 Dunia</button><button id="go">MAIN</button><button id="dl" style="background:#ff6b9d;border-bottom-color:#a03060">🌍 TANTANGAN HARIAN</button><button id="wb" style="background:#fff;border-bottom-color:#999">🎽 LEMARI & TOKO</button></div>
+<p id="gf" style="color:#ffd23f;min-height:18px"></p><p id="bs"></p><button id="ws" style="background:#9be7ff;border-bottom-color:#4a90b8">🗺 Dunia</button><button id="go">MAIN</button><button id="cont" class="hide" style="background:#7dff9b;border-bottom-color:#2a8a4a;color:#0b2a12">▶ LANJUTKAN RUN</button><button id="dl" style="background:#ff6b9d;border-bottom-color:#a03060">🌍 TANTANGAN HARIAN</button><button id="wb" style="background:#fff;border-bottom-color:#999">🎽 LEMARI & TOKO</button></div>
 <div id="up" class="ov hide"><h1 style="font-size:26px">PILIH UPGRADE!</h1><div id="opts"></div></div>
 <div id="ov" class="ov hide"><h1 style="font-size:22px">GAME OVER</h1><p id="st"></p><p id="rk" style="color:#ffd23f;font-size:20px"></p><div id="gstats" style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:6px 0 10px"></div><button id="sh" style="background:#ff6b9d; border-bottom-color:#a03060">📤 BAGIKAN SKOR</button><button id="re">MAIN LAGI</button><button id="wb2" style="background:#fff;border-bottom-color:#999">🎽 LEMARI & TOKO</button><button id="pr" style="background:#ffd700;border-bottom-color:#b8860b;display:none">🔁 PRESTIGE</button></div>
 <div id="end" class="ov hide" style="background:rgba(2,2,12,.94);z-index:60">
@@ -149,6 +149,12 @@ try{const o=JSON.parse(localStorage.getItem('pxr2'));if(o&&o.sel&&o.own){Object.
 SV.slots=SV.slots||[0,null,null];SV.skpts=SV.skpts||0;SV.tree=SV.tree||{};SV.frag=SV.frag||0;SV.ngp=SV.ngp||0;
 SV.own.role=SV.own.role||[0];SV.own.friend=SV.own.friend||[0];SV.sel.role=SV.sel.role||0;SV.sel.f1=SV.sel.f1||0;SV.sel.f2=SV.sel.f2||0;SV.unl=SV.unl||0;SV.sw=SV.sw||0;
 const save=()=>{try{localStorage.setItem('pxr2',JSON.stringify(SV))}catch(e){}};
+// ---- run snapshot (save-state): simpan progress run biar gak hilang kalau app di-kill / hang ----
+function snapRun(){try{SV.run={x:p.x,y:p.y,hp:p.hp,max:p.max,lvl:p.lvl,xp:p.xp,need:p.need,coins:p.coins,kills:p.kills,score,wld:WLD,t,skills:p.skills.slice(),scd:p.scd.slice(),scdMax:p.scdMax.slice(),skpts:p.skpts||0,spd:p.spd,dmg:p.dmg,range:p.range,pend:0,ts:Date.now()};save()}catch(e){}}
+function hasRun(){const r=SV.run;return !!(r&&r.ts&&Date.now()-r.ts<1000*60*60*6&&!p.dead)}
+function clearRun(){delete SV.run;save()}
+function restoreRun(){const r=SV.run;if(!r)return false;start(0);$('dgo').click();paused=false;pz=0;WLD=r.wld||0;useBiome(WLD);gen();p.x=r.x;p.y=r.y;p.hp=r.hp;p.max=r.max;p.lvl=r.lvl;p.xp=r.xp;p.need=r.need;p.coins=r.coins;p.kills=r.kills;score=r.score;t=r.t||0;p.skills=(r.skills||[]).slice();p.scd=(r.scd||[]).slice();p.scdMax=(r.scdMax||[]).slice();p.skpts=r.skpts||0;p.spd=r.spd;p.dmg=r.dmg;p.range=r.range;en=[];spawnWorldObjs();setupWorld();camX=p.x-W/S/2;camY=p.y-H/S/2;ban.s='▶ Run dilanjutkan! Lv'+p.lvl+' · '+p.kills+' kills';ban.t=3;return true}
+function refreshCont(){const el=$('cont');if(!el)return;el.classList.toggle('hide',!hasRun())}
 function buildP(){const sk=SKINS[SV.sel.skin],ar=ARMS[SV.sel.armor],cu=SV.cu||{};
 const pl={...PAL,s:cu.s||sk.s,S:cu.S||sk.S,h:ar.helm?'#8d9aa5':(cu.h||sk.h),H:ar.helm?'#c7d2da':(cu.H||sk.H),b:cu.b||ar.b,B:cu.B||ar.B,y:cu.y||ar.y};
 SP.pa=mk([...HEAD,"..kkNkkNkk..","..kNNkkNNk..","..kkk..kkk.."],pl);SP.pb=mk([...HEAD,"..kkNkkNkk..",".kNNk..kNNk.",".kkk....kkk."],pl)}
@@ -285,9 +291,12 @@ else if(a.k===2){const w=Math.sin(a.ph*30)>0?4:2;shadow(x,y+10,3);ctx.fillStyle=
 else if(a.k===3){shadow(x,y+5,6);R('#1a1020',x-6,y-8,12,13);R('#c8a165',x-5,y-7,10,11);R('#e8c98a',x-5,y-7,10,3);R('#4fc3f7',x-3,y-4,2,2);R('#4fc3f7',x+1,y-4,2,2);R('#8a6a3a',x-7,y-3,2,6);R('#8a6a3a',x+5,y-3,2,6);R('#8a6a3a',x-5,y+3,4,2);R('#8a6a3a',x+1,y+3,4,2)}
 else{const w=Math.sin(a.ph*16)>0?3:0;shadow(x,y+9,4);R('#ff9f1c',x-8,y-3-w,5,3);R('#ff9f1c',x+3,y-3-w,5,3);R('#d00000',x-4,y-4,8,7);R('#ff6b35',x-3,y-3,6,5);R('#ffd23f',x-1,y-1,3,3);R('#ff6b35',x+f*4-1,y-6,3,3);R('#ffd23f',x+f*6,y-5,2,1);R('#fff',x+f*4,y-5,1,1)}}
 // ---------- sound ----------
-let AC;function sfx(f,d,ty,v,f2){if(!AC||SV.mute)return;try{const t=AC.currentTime,o=AC.createOscillator(),g=AC.createGain();o.type=ty||'square';o.frequency.setValueAtTime(f,t);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+d);g.gain.setValueAtTime(v||.04,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g);g.connect(AC.destination);o.start();o.stop(t+d)}catch(e){}}
+let AC;// auto-disconnect audio nodes when finished (mobile AudioContext GC fix)
+function mkOsc(){const o=AC.createOscillator(),targets=[];const _c=o.connect.bind(o);o.connect=(dst)=>{targets.push(dst);return _c(dst)};const kill=()=>{if(o.__done)return;o.__done=1;for(const d of targets){try{d.disconnect()}catch(e){}}try{o.disconnect()}catch(e){}};o.onended=kill;const _s=o.stop.bind(o);o.stop=(t)=>{const ms=Math.max(50,(t-AC.currentTime)*1000+150);setTimeout(kill,ms);return _s(t)};return o}
+function mkGain(){const g=AC.createGain();return g}
+function sfx(f,d,ty,v,f2){if(!AC||SV.mute||AC.state!=='running')return;try{const t=AC.currentTime,o=mkOsc(),g=mkGain();o.type=ty||'square';o.frequency.setValueAtTime(f,t);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+d);g.gain.setValueAtTime(v||.04,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g);g.connect(AC.destination);o.start();o.stop(t+d)}catch(e){}}
 // 💓 heartbeat low-HP + ⏳ near-miss slow-mo
-function playHeart(){if(!AC||SV.mute)return;const t0=AC.currentTime;[0,.12].forEach((off,i)=>{const o=AC.createOscillator(),g=AC.createGain();o.type='sine';o.frequency.value=i?52:60;g.gain.setValueAtTime(.09,t0+off);g.gain.exponentialRampToValueAtTime(.0001,t0+off+.1);o.connect(g);g.connect(AC.destination);o.start(t0+off);o.stop(t0+off+.12)})}
+function playHeart(){if(!AC||SV.mute)return;const t0=AC.currentTime;[0,.12].forEach((off,i)=>{const o=mkOsc(),g=mkGain();o.type='sine';o.frequency.value=i?52:60;g.gain.setValueAtTime(.09,t0+off);g.gain.exponentialRampToValueAtTime(.0001,t0+off+.1);o.connect(g);g.connect(AC.destination);o.start(t0+off);o.stop(t0+off+.12)})}
 function chkNearMiss(dt){if(p.hp<=2){p.hb=(p.hb||0)-dt;if(p.hb<=0){p.hb=.9;playHeart()}}}
 
 // ---------- musik chiptune adaptif ----------
@@ -300,15 +309,15 @@ const BPS=bossOn?8.2:en.length>4?7.0:5.6,base=(bossOn?110:165)*Math.pow(2,(WKEY[
 for(let i=0;i<8;i++){
   const tt=t+.03+i*60/BPS,scale=SC[bossOn?'boss':en.length>4?'battle':'field'];
   const root=base*(i%8===6?1.5:i%4===2?1.335:1);
-  const o=AC.createOscillator(),g=AC.createGain();
+  const o=mkOsc(),g=mkGain();
   o.type=bossOn?'sawtooth':'square';
   const semi=scale[(i*3+musI)%scale.length]+(i%8===7?12:0);
   o.frequency.value=root*Math.pow(2,semi/12);
   g.gain.setValueAtTime(bossOn?.028:.02,tt);g.gain.exponentialRampToValueAtTime(.0001,tt+60/BPS*.9);
   o.connect(g);g.connect(AC.destination);o.start(tt);o.stop(tt+60/BPS);
-  if(i%2===0){const b=AC.createOscillator(),bg=AC.createGain();b.type='triangle';b.frequency.value=(base/2)*(i%4===0?1:.75);bg.gain.setValueAtTime(.03,tt);bg.gain.exponentialRampToValueAtTime(.0001,tt+.12);b.connect(bg);bg.connect(AC.destination);b.start(tt);b.stop(tt+.14)}}
+  if(i%2===0){const b=mkOsc(),bg=mkGain();b.type='triangle';b.frequency.value=(base/2)*(i%4===0?1:.75);bg.gain.setValueAtTime(.03,tt);bg.gain.exponentialRampToValueAtTime(.0001,tt+.12);b.connect(bg);bg.connect(AC.destination);b.start(tt);b.stop(tt+.14)}}
 musI=(musI+3)%12}
-setInterval(function(){if(!paused&&!pz&&!document.hidden)playMusic()},900);
+setInterval(function(){if(!paused&&!pz&&!document.hidden&&AC&&AC.state==='running')playMusic()},900);
 // ---------- input ----------
 const keys={};let js={on:false,id:-1,ox:0,oy:0,x:0,y:0},atkHeld=false;
 addEventListener('keydown',e=>{keys[e.key.toLowerCase()]=1;const lk=e.key.toLowerCase();if(lk==='q')skillReq=1;else if(lk==='e')skillReq=2;else if(lk==='r')skillReq=3;if(e.key==='p'||e.key==='P')pz=!pz;if(e.key===' ')atkHeld=true;if(e.key===' '||e.key.startsWith('Arrow'))e.preventDefault()});
@@ -352,7 +361,7 @@ for(const e of en){const d=Math.hypot(e.x-p.x,e.y-p.y);if(d<170){e.hp-=p.dmg*8+6
 p.hp=Math.min(p.max,p.hp+2);ban.s='⚡ UBER BLAST!';ban.t=1.5}
 const ACHVN={first:'🩸 Darah Pertama',k25:'⚔ Pembantai — 25 kill',boss:'👑 Raja Tumbang',mini:'⭐ Pemburu Mini-Boss',rich:'💰 Sultan — 100 koin',lv5:'⭐ Level 5!',combo:'🔥 Combo x10',skin3:'🧑 Kolektor 3 skin',shiny:'✨ Shiny Hunter',dodge:'✨ Perfect Dodge',k100:'⚔ Veteran 100',k500:'⚔ Elite 500',lvl20:'⬆ Lv20',combo50:'🔥 Inferno x50',glitch:'⌁ Anomali',ngp:'✦ New Game+',relic12:'🏆 Kolektor Relik',dexall:'📖 Professor',craft:'⚒ Crafter'};
 function achvUnlock(id){SV.a=SV.a||{};if(SV.a[id])return;SV.a[id]=1;save();ban.s='🏆 '+(ACHVN[id]||id);ban.t=2.5;sfx(1046,.4,'sine',.06,2093);burst(p.x,p.y,'#ffd23f',24)}
-function playVictory(){if(!AC||SV.mute)return;const t0=AC.currentTime;[523,659,784,1047,1319].forEach((f,i)=>{const o=AC.createOscillator(),g=AC.createGain();o.type='square';o.frequency.value=f;const tt=t0+i*.09;g.gain.setValueAtTime(.06,tt);g.gain.exponentialRampToValueAtTime(.0001,tt+.35);o.connect(g);g.connect(AC.destination);o.start(tt);o.stop(tt+.4)})}
+function playVictory(){if(!AC||SV.mute)return;const t0=AC.currentTime;[523,659,784,1047,1319].forEach((f,i)=>{const o=mkOsc(),g=mkGain();o.type='square';o.frequency.value=f;const tt=t0+i*.09;g.gain.setValueAtTime(.06,tt);g.gain.exponentialRampToValueAtTime(.0001,tt+.35);o.connect(g);g.connect(AC.destination);o.start(tt);o.stop(tt+.4)})}
 function spawnMini(){const kinds=['s','a','b','g'],e=spawn(kinds[WLD]);if(e){e.m=1;e.hp=e.mx=Math.ceil(e.mx*6);e.r+=4;e.sp*=.85;e.dm+=1;e.pts*=8;e.xp*=6;ban.s='⚠ MINI-BOSS: '+MBN[WLD]+'!';ban.t=2.5;sfx(140,.5,'sawtooth',.08,50)}return e}
 function askUp(){pend++;paused=true;if($('up').classList.contains('hide'))showUp();sfx(520,.12,'square',.05,1040)}
 function showUp(){const o=$('opts');o.innerHTML='';[...UPS].sort(()=>rnd()-.5).filter((u,i,a)=>a.findIndex(v=>v[0]===u[0])===i).slice(0,3).forEach(u=>{const b=document.createElement('button');b.innerHTML=u[0]+'<br><small>'+u[1]+'</small>';b.onclick=()=>{u[2]();pend--;if(pend>0)showUp();else{$('up').classList.add('hide');paused=!$('dg').classList.contains('hide')}};o.appendChild(b)});$('up').classList.remove('hide')}
@@ -396,7 +405,7 @@ if(e.k==='k'){askUp();for(let i=0;i<4;i++)pk.push({x:e.x+i*5-8,y:e.y+6,t:i<2?'h'
 else if(e.m){ban.s='⭐ '+MBN[WLD]+' TUMBANG!';ban.t=2.5;shake=.4;cine=.9;hs=.25;playVictory();for(let i=0;i<8;i++)pk.push({x:e.x+(rnd()-.5)*20,y:e.y+(rnd()-.5)*16,t:i%3===0?'h':'c'});p.coins+=15;achvUnlock('mini')}
 if(e.el&&!e.m){pk.push({x:e.x,y:e.y,t:rnd()<.5?'h':'c'});pk.push({x:e.x+4,y:e.y,t:'c'});ban.s='💀 ELITE TUMBANG!';ban.t=1.2}}
 function attack(){for(const c of br)if(c.hp>0&&Math.hypot(c.x-p.x,c.y-p.y)<p.range+6)hitCrate(c);for(const n2 of ns)if(n2.hp>0&&Math.hypot(n2.x-p.x,n2.y-p.y)<p.range+8){n2.hp-=p.dmg;n2.fl=.15;burst(n2.x,n2.y,'#8bd450',4);sfx(220,.08,'square',.04);if(n2.hp<=0){burst(n2.x,n2.y,'#8bd450',16);for(let i2=0;i2<3;i2++)pk.push({x:n2.x+(rnd()-.5)*10,y:n2.y+(rnd()-.5)*8,t:'c'});score+=75;ban.s='🥚 Sarang hancur!';ban.t=1.2;sfx(500,.25,'square',.05,900)}break}{let n=null,bd=1e9;for(const e of en){const d=Math.hypot(e.x-p.x,e.y-p.y);if(d<bd){bd=d;n=e}}p.aa=n&&bd<p.range+30?Math.atan2(n.y-p.y,n.x-p.x):Math.atan2(p.fy,p.fx);if(Math.abs(Math.cos(p.aa))>.1)p.face=Math.cos(p.aa)>=0?1:-1}p.atk=p.cd;swing=.2;sfx(300,.08,'square',.04,150);for(const e of en){const dx=e.x-p.x,dy=e.y-p.y,d=Math.hypot(dx,dy)||1;if(d<p.range+e.r){const pd=(p.pdB||0)>0;if(pd)p.pdB--;const cr=pd||rnd()<p.crit,dm=p.dmg*(pd?3:cr?2:1);e.hp-=dm;e.fl=.12;const f=e.k==='g'?4:e.k==='k'?2:9;e.kx=dx/d*f*12;e.ky=dy/d*f*12;e.sv=(e.sv||0)+5;burst(e.x,e.y,cr?'#ffd23f':'#fff',cr?8:3);dp.push({x:e.x,y:e.y-6,s:dm,l:.6,cr});hs=Math.max(hs,cr?.07:.035);if(cr)shake=Math.max(shake,.1)}}}
-function die(){if(p.dead)return;p.dead=1;paused=true;if(score>best){best=score;try{localStorage.setItem('pxr',best)}catch(e){}}sfx(200,.8,'sawtooth',.08,30);
+function die(){if(p.dead)return;p.dead=1;paused=true;clearRun();if(score>best){best=score;try{localStorage.setItem('pxr',best)}catch(e){}}sfx(200,.8,'sawtooth',.08,30);
 const earn=p.coins+Math.floor(score/100)+Math.floor(p.kills/5);SV.coins+=earn;save();$('st').innerHTML='Skor: <b>'+score+'</b><br>+'+earn+' 🪙 (total '+SV.coins+')<br>Level '+p.lvl+' · '+p.kills+' monster · '+p.coins+' koin<br>Terbaik: '+best+'<br><small style="color:#9be7ff">⏱ '+Math.floor(stats.dt/60)+'m '+Math.floor(stats.dt%60)+'s · ⭐ '+Object.keys(stats.kt).map(k=>(stats.kt[k])+'× '+TN[k]).join(', ')+'</small>';const RNK=[[0,'Pemula 🌱'],[300,'Pemburu Slime 🟢'],[1000,'Ksatria ⚔️'],[2500,'Pahlawan 🛡️'],[5000,'Legenda 👑']],rk=RNK.filter(r=>score>=r[0]).pop()[1];
 SV.top=(SV.top||[]).concat(score).sort((a,b)=>b-a).slice(0,5);save();dailyGift();$('rk').textContent='Rank: '+rk;const g=$('gstats');if(g){const mx=Math.max(1,p.kills,Math.floor(stats.dt),p.coins);g.innerHTML=[['⏱',Math.floor(stats.dt/60)+'m'+Math.floor(stats.dt%60)+'s',stats.dt],['⚔️',p.kills,p.kills],['🪙',p.coins,p.coins],['🎯',p.lvl,Math.max(1,p.lvl)]].map(x=>'<div style="min-width:76px;padding:6px 8px;background:rgba(255,255,255,.06);border:2px solid #2a2440"><div style="font-size:12px;color:#9be7ff">'+x[0]+'</div><div style="font-size:22px;color:#ffd23f">'+x[1]+'</div></div>').join('')}
 if(score===SV.top[0]&&SV.top.length>1){$('rk').textContent='🏅 REKOR BARU — '+rk}else if(score>=SV.top[0]*.7&&SV.top[0]>500){$('rk').textContent='⭐ Nyaris rekor! ('+Math.floor(score/SV.top[0]*100)+'%) — '+rk}
@@ -634,7 +643,7 @@ if(!paused&&!pz)pollPad();
 if(hs>0)hs=Math.max(0,hs-dt);if(hitStop>0){hitStop-=dt}else if(!paused&&!pz)update(dt);if(!$('wd').classList.contains('hide'))drawPv();
 const k=Math.min(1,dt*7);camX+=(p.x+(moving?p.fx*16:0)-W/S/2-camX)*k;camY+=(p.y+(moving?p.fy*16:0)-H/S/2-camY)*k;draw();requestAnimationFrame(loop)}
 function start(d){daily=d?1:0;pz=0;try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();AC.resume()}catch(e){}reset();paused=false;ban.s=daily?'🌍 Dunia Harian: sama untuk semua pemain!':'Geser layar untuk jalan · serangan otomatis';ban.t=4;['ti','ov','up'].forEach(i=>$(i).classList.add('hide'));introDlg()}
-$('wb').onclick=wopen;$('wb2').onclick=wopen;$('wc').onclick=()=>$('wd').classList.add('hide');$('sk').addEventListener('pointerdown',e=>{skillReq=1;e.preventDefault()});$('sk2').addEventListener('pointerdown',e=>{skillReq=2;e.preventDefault()});$('sk3').addEventListener('pointerdown',e=>{skillReq=3;e.preventDefault()});$('ws').onclick=()=>{SV.sw=((SV.sw||0)+1)%((SV.unl||0)+1);save();wsLabel()};$('dgo').onclick=()=>{$('dg').classList.add('hide');paused=(pend>0&&!$('up').classList.contains('hide'))||shopOpen};$('go').onclick=()=>start(0);$('dl').onclick=()=>start(1);$('re').onclick=()=>start(daily);
+$('wb').onclick=wopen;$('wb2').onclick=wopen;$('wc').onclick=()=>$('wd').classList.add('hide');$('sk').addEventListener('pointerdown',e=>{skillReq=1;e.preventDefault()});$('sk2').addEventListener('pointerdown',e=>{skillReq=2;e.preventDefault()});$('sk3').addEventListener('pointerdown',e=>{skillReq=3;e.preventDefault()});$('ws').onclick=()=>{SV.sw=((SV.sw||0)+1)%((SV.unl||0)+1);save();wsLabel()};$('dgo').onclick=()=>{$('dg').classList.add('hide');paused=(pend>0&&!$('up').classList.contains('hide'))||shopOpen};$('go').onclick=()=>{clearRun();start(0)};$('cont').onclick=()=>restoreRun();$('dl').onclick=()=>start(1);$('re').onclick=()=>start(daily);
 $('endGo').onclick=()=>{$('end').classList.add('hide');SV.ending=1;achvUnlock('ngp');NGP=(SV.ngp||0)+1;SV.ngp=NGP;start(daily);ban.s='✦ NEW GAME+ '+NGP+' — musuh lebih kuat, hadiah lebih besar';ban.t=4};
 $('endShare').onclick=async()=>{const msg='✦ TAMAT! Aku tumbangkan Raja Slime ABADI di Pixel Realm!\n⭐ '+score+' poin · Lv'+p.lvl+' · '+p.kills+' kills · NG+'+(SV.ngp||0)+'\n⌁ Fragmen anomali: '+(SV.frag||0)+'/3\nUdah sampai ending? ▶ '+location.href;lastMsg=msg;try{if(navigator.share){await navigator.share({text:msg})}else{await navigator.clipboard.writeText(msg);toast('📋 Teks ending disalin!')}}catch(e){}};
 $('endFb').onclick=()=>{const fb=prompt('💬 Masukan / bug / ide fitur untuk Pixel Realm:','');if(fb&&fb.trim()){SV.feedback=(SV.feedback||[]).concat(fb.trim().slice(0,280));save();toast('Terima kasih! Masukan lu tersimpan ✓','#7dff9b');$('endFb').textContent='✓ MASUKAN TERSIMPAN'}};
@@ -651,6 +660,11 @@ function cycleSkin(dir){const own=ownSkins();if(own.length<2){ban.s='🧑 Skin l
 $('wk').onclick=()=>{if(!document.getElementById('wd').classList.contains('hide'))return;cycleSkin(1)};
 addEventListener('keydown',e=>{if(e.key==='c'||e.key==='C')cycleSkin(1)});
 $('ps').onclick=()=>{pz=!pz};
+// audio: resume kalau suspended (abis dari background / lock screen) — biar suara balik & node gak numpuk
+addEventListener('visibilitychange',()=>{if(!document.hidden&&AC&&AC.state!=='running')AC.resume().catch(()=>{})});
+addEventListener('pagehide',()=>{if(!p.dead&&p.skills)snapRun();else save()});
+// autosave tiap 20 dtk (save-state) — progress run gak hilang kalau app di-kill / hang
+setInterval(()=>{if(!paused&&!p.dead&&typeof p!=='undefined'&&p&&p.skills)snapRun()},20000);
 // tap canvas saat pause -> resume (mobile friendly)
 cv.addEventListener('pointerdown',()=>{if(pz){pz=false;return}});
 // safety: kalau paused tanpa overlay apapun (stuck), auto-resume
@@ -675,6 +689,7 @@ else{window.qOv=null;QMD=1;ban.s='🔆 Efek auto'}ban.t=1.5}});
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&!paused)pz=1});
 $('sh').onclick=async()=>{try{if(navigator.share){await navigator.share({text:lastMsg});return}}catch(e){if(e&&e.name==='AbortError')return}try{await navigator.clipboard.writeText(lastMsg);$('sh').textContent='✔ TERSALIN!'}catch(e){$('rk').textContent=lastMsg}};
 reset();dailyGift();requestAnimationFrame(loop);
+refreshCont();setInterval(refreshCont,3000);
 // first-run hint
 if(!SV.seenTutorial){SV.seenTutorial=1;save();setTimeout(()=>{if(!paused){ban.s='👉 Gerak: WASD/joystick · Skill: Q · 🛒 beli mid-run';ban.t=5}},800)}
 
