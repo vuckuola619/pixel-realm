@@ -300,23 +300,21 @@ function playHeart(){if(!AC||SV.mute)return;const t0=AC.currentTime;[0,.12].forE
 function chkNearMiss(dt){if(p.hp<=2){p.hb=(p.hb||0)-dt;if(p.hb<=0){p.hb=.9;playHeart()}}}
 
 // ---------- musik chiptune adaptif ----------
-function playMusic(){if(!AC||SV.mute)return;const t=AC.currentTime;
+// musik: pool 2 osc tetap (melodi+bass) — 0 node baru per detik (mobile-safe)
+let _mo=null,_mg=null,_bo=null,_bg=null;
+function musicNodes(){if(_mo)return;if(!AC)return;_mo=AC.createOscillator();_mg=AC.createGain();_mo.type='square';_mg.gain.value=0;_mo.connect(_mg);_mg.connect(AC.destination);_mo.start();_bo=AC.createOscillator();_bg=AC.createGain();_bo.type='triangle';_bg.gain.value=0;_bo.connect(_bg);_bg.connect(AC.destination);_bo.start()}
+function playMusic(){if(!AC||SV.mute)return;musicNodes();const t=AC.currentTime;
 const bossOn=en.some(e=>e.k==='k');
 const SC={field:[0,3,5,7,10,12],battle:[0,2,3,7,8,12],boss:[0,1,5,6,8,11]};
-// base note per dunia: tiap dunia beda key
 const WKEY=[0,2,5,7];
 const BPS=bossOn?8.2:en.length>4?7.0:5.6,base=(bossOn?110:165)*Math.pow(2,(WKEY[WLD]||0)/12);
-for(let i=0;i<8;i++){
-  const tt=t+.03+i*60/BPS,scale=SC[bossOn?'boss':en.length>4?'battle':'field'];
-  const root=base*(i%8===6?1.5:i%4===2?1.335:1);
-  const o=mkOsc(),g=mkGain();
-  o.type=bossOn?'sawtooth':'square';
-  const semi=scale[(i*3+musI)%scale.length]+(i%8===7?12:0);
-  o.frequency.value=root*Math.pow(2,semi/12);
-  g.gain.setValueAtTime(bossOn?.028:.02,tt);g.gain.exponentialRampToValueAtTime(.0001,tt+60/BPS*.9);
-  o.connect(g);g.connect(AC.destination);o.start(tt);o.stop(tt+60/BPS);
-  if(i%2===0){const b=mkOsc(),bg=mkGain();b.type='triangle';b.frequency.value=(base/2)*(i%4===0?1:.75);bg.gain.setValueAtTime(.03,tt);bg.gain.exponentialRampToValueAtTime(.0001,tt+.12);b.connect(bg);bg.connect(AC.destination);b.start(tt);b.stop(tt+.14)}}
-musI=(musI+3)%12}
+const scale=SC[bossOn?'boss':en.length>4?'battle':'field'],NB=8,ST=60/BPS;
+_mo.type=bossOn?'sawtooth':'square';_mg.gain.cancelScheduledValues(t);_bg.gain.cancelScheduledValues(t);
+for(let i=0;i<NB;i++){const tt=t+.03+i*ST;const root=base*(i%8===6?1.5:i%4===2?1.335:1);const semi=scale[(i*3+musI)%scale.length]+(i%8===7?12:0);
+  _mo.frequency.setValueAtTime(root*Math.pow(2,semi/12),tt);_mg.gain.setValueAtTime(bossOn?.028:.02,tt);_mg.gain.exponentialRampToValueAtTime(.0001,tt+ST*.9);
+  if(i%2===0){_bo.frequency.setValueAtTime((base/2)*(i%4===0?1:.75),tt);_bg.gain.setValueAtTime(.03,tt);_bg.gain.exponentialRampToValueAtTime(.0001,tt+.12)}}
+_mg.gain.setValueAtTime(0,t+NB*ST+.05);_bg.gain.setValueAtTime(0,t+NB*ST+.05)}
+musI=(musI+3)%12;
 setInterval(function(){if(!paused&&!pz&&!document.hidden&&AC&&AC.state==='running')playMusic()},900);
 // ---------- input ----------
 const keys={};let js={on:false,id:-1,ox:0,oy:0,x:0,y:0},atkHeld=false;
@@ -460,7 +458,7 @@ en=en.filter(e=>{if(e.rm)return false;if(e.hp>0)return true;kill(e);return false
 for(const k of pk){if(k.vx===undefined){k.vx=(rnd()-.5)*90;k.vy=(rnd()-.5)*90;k.z=0;k.vz=80+rnd()*40}if(k.vx||k.vy){const nx=k.x+k.vx*dt,ny=k.y+k.vy*dt;if(!sol(nx,ny)){k.x=nx;k.y=ny}const dc=Math.max(0,1-9*dt);k.vx*=dc;k.vy*=dc;if(Math.abs(k.vx)+Math.abs(k.vy)<2)k.vx=k.vy=0}if(k.vz!==undefined&&(k.z>0||k.vz>0)){k.vz-=320*dt;k.z+=k.vz*dt;if(k.z<=0){k.z=0;k.vz=Math.abs(k.vz)>25?-k.vz*.5:0}}const dx=p.x-k.x,dy=p.y-k.y,d=Math.hypot(dx,dy)||1;if(d<p.mag){k.x+=dx/d*120*dt;k.y+=dy/d*120*dt}
 if(d<7){k.dead=1;if(k.t==='g'){p.xp+=Math.ceil(k.v*(p.xpB||1));score+=2;sfx(900,.06,'sine',.04);while(p.xp>=p.need){p.xp-=p.need;p.lvl++;p.need=Math.round(p.need*1.3+2);p.hp=Math.min(p.max,p.hp+2);SV.skpts=(SV.skpts||0)+1;burst(p.x,p.y,'#ffd23f',28);burst(p.x,p.y,'#4fc3f7',16);ban.s='⭐ LEVEL '+p.lvl+'! +1 🔮 poin skill';ban.t=1.8;askUp()}}else if(k.t==='c'){p.coins++;score+=10;qprog('coin',1);sfx(1200,.08,'sine',.04,1700)}else{p.hp=Math.min(p.max,p.hp+1);sfx(500,.15,'sine',.05,800)}}}
 pk=pk.filter(k=>!k.dead);if(pk.length>160)pk.splice(0,pk.length-160);
-if(pt.length>380*Math.max(.5,QMD))pt.splice(0,pt.length-380|0);
+if(pt.length>380*Math.max(.5,QMD))pt.splice(0,(pt.length-380*Math.max(.5,QMD))|0);
 if(!p.dead&&!daily){baitT-=dt;if(baitT<=0){baitT=45+rnd()*30;toast(BAIT[baitI%BAIT.length]);baitI++;if(baitI===1)sfx(120,.5,'sawtooth',.03,60)}}
 for(const r of rl){if(r.got)continue;if(Math.hypot(r.x-p.x,r.y-p.y)<12){r.got=1;const R=RELICS[r.i];SV.relic[R[0]]=1;RELIC_BONUS[R[3]]();score+=150;ban.s='🏺 RELIK: '+R[1]+' — '+R[2];ban.t=3.5;burst(r.x,r.y,'#ffd23f',30);sfx(660,.4,'sine',.07,1320);const cnt=Object.keys(SV.relic).length;if(cnt===12)achvUnlock('relic12');save()}}
 for(const c of ch)if(!c.o&&Math.hypot(c.x-p.x,c.y-p.y)<12){c.o=1;score+=50;p.coins+=3;qprog('chest',1);burst(c.x,c.y,'#ffd23f',24);if(rnd()<.3)rollShopToken();askUp()}
