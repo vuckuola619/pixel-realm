@@ -42,7 +42,7 @@ button:active{transform:translateY(2px)}
 <div id="ti" class="ov"><h1>PIXEL<br>REALM</h1>
 <p>Jelajahi pulau, tebas monster, kumpulkan gem, buka peti harta, dan kalahkan 👑 Raja Slime!</p>
 <p style="opacity:.75">Geser jempol di layar / joystick = jalan<br>Serangan otomatis, ⚔️ = tebas manual<br>Tombol biru = skill (PC: Q/E/R)<br>PC: WASD / panah + Spasi</p>
-<p id="gf" style="color:#ffd23f;min-height:18px"></p><p id="bs"></p><button id="ws" style="background:#9be7ff;border-bottom-color:#4a90b8">🗺 Dunia</button><button id="go">MAIN</button><button id="cont" class="hide" style="background:#7dff9b;border-bottom-color:#2a8a4a;color:#0b2a12">▶ LANJUTKAN RUN</button><button id="dl" style="background:#ff6b9d;border-bottom-color:#a03060">🌍 TANTANGAN HARIAN</button><button id="wb" style="background:#fff;border-bottom-color:#999">🎽 LEMARI & TOKO</button></div>
+<p id="gf" style="color:#ffd23f;min-height:18px"></p><p id="bs"></p><button id="ws" style="background:#9be7ff;border-bottom-color:#4a90b8">🗺 Dunia</button><button id="go">MAIN</button><button id="cont" class="hide" style="background:#7dff9b;border-bottom-color:#2a8a4a;color:#0b2a12">▶ LANJUTKAN RUN</button><button id="dl" style="background:#ff6b9d;border-bottom-color:#a03060">🌍 TANTANGAN HARIAN</button><button id="wb" style="background:#fff;border-bottom-color:#999">🎽 LEMARI & TOKO</button><button id="bbr" style="background:#333;color:#eee;border-bottom-color:#111;font-size:11px;padding:6px 10px">📋 LAPORAN BUG (kirim kalau hang)</button></div>
 <div id="up" class="ov hide"><h1 style="font-size:26px">PILIH UPGRADE!</h1><div id="opts"></div></div>
 <div id="ov" class="ov hide"><h1 style="font-size:22px">GAME OVER</h1><p id="st"></p><p id="rk" style="color:#ffd23f;font-size:20px"></p><div id="gstats" style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:6px 0 10px"></div><button id="sh" style="background:#ff6b9d; border-bottom-color:#a03060">📤 BAGIKAN SKOR</button><button id="re">MAIN LAGI</button><button id="wb2" style="background:#fff;border-bottom-color:#999">🎽 LEMARI & TOKO</button><button id="pr" style="background:#ffd700;border-bottom-color:#b8860b;display:none">🔁 PRESTIGE</button></div>
 <div id="end" class="ov hide" style="background:rgba(2,2,12,.94);z-index:60">
@@ -64,7 +64,9 @@ let RN=Math.random;const mul=a=>()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>
 const $=id=>document.getElementById(id),cv=$('c'),ctx=cv.getContext('2d'),nc=(w,h)=>{const c=document.createElement('canvas');c.width=w;c.height=h;return c};
 const N=96,T=16,M=new Uint8Array(N*N),dark=nc(1,1),rnd=()=>RN();
 let W,H,S,SA=0,seed=1,dtG=.016;
-function rs(){W=cv.width=innerWidth;H=cv.height=innerHeight;S=Math.max(2,Math.round(Math.min(W,H)/150));ctx.imageSmoothingEnabled=false;SA=$('sa').offsetHeight;dark.width=W;dark.height=H}
+let vig=null,vigW=0,vigH=0;
+function buildVig(){if(vigW===W&&vigH===H&&vig)return;vig=nc(W,H);const vx=vig.getContext('2d');const vg=vx.createRadialGradient(W/2,H/2,Math.min(W,H)*.42,W/2,H/2,Math.max(W,H)*.75);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(10,5,25,.42)');vx.fillStyle=vg;vx.fillRect(0,0,W,H);vigW=W;vigH=H}
+function rs(){W=cv.width=innerWidth;H=cv.height=innerHeight;S=Math.max(2,Math.round(Math.min(W,H)/150));ctx.imageSmoothingEnabled=false;SA=$('sa').offsetHeight;dark.width=W;dark.height=H;buildVig()}
 addEventListener('resize',rs);rs();
 const R=(c,x,y,w,h)=>{ctx.fillStyle=c;ctx.fillRect(x,y,w,h)};
 function hh(x,y){const n=Math.sin(x*127.1+y*311.7+seed)*43758.5453;return n-Math.floor(n)}
@@ -596,12 +598,12 @@ if(slam){const u=Math.min(1,slam.t/slam.T),rr=slam.R*u;ctx.strokeStyle='rgba(255
 for(const q of pt)R(q.c,Math.round(q.x),Math.round(q.y-(q.z||0)),2,2);
 ctx.setTransform(1,0,0,1,0,0);
 const dk=Math.max(0,-Math.sin((t%120)/120*6.283))*.5;
-if(dk>.03){const dx=dark.getContext('2d'),px=(p.x-cx)*S,py=(p.y-cy)*S;dx.globalCompositeOperation='source-over';dx.clearRect(0,0,W,H);dx.fillStyle='rgba(8,8,50,'+dk*1.3+')';dx.fillRect(0,0,W,H);
-dx.globalCompositeOperation='destination-out';const g=dx.createRadialGradient(px,py,10,px,py,45*S);g.addColorStop(0,'rgba(0,0,0,.95)');g.addColorStop(1,'rgba(0,0,0,0)');dx.fillStyle=g;dx.fillRect(0,0,W,H);if(camp){const kx=(camp.x-cx)*S,ky=(camp.y-cy)*S,g2=dx.createRadialGradient(kx,ky,6,kx,ky,34*S);g2.addColorStop(0,'rgba(0,0,0,.9)');g2.addColorStop(1,'rgba(0,0,0,0)');dx.fillStyle=g2;dx.fillRect(0,0,W,H)}ctx.drawImage(dark,0,0)}
+if(dk>.03){const dx=dark.getContext('2d'),px=(p.x-cx)*S,py=(p.y-cy)*S;const skipCamp=QMD<.8;dx.globalCompositeOperation='source-over';dx.clearRect(0,0,W,H);dx.fillStyle='rgba(8,8,50,'+dk*1.3+')';dx.fillRect(0,0,W,H);
+dx.globalCompositeOperation='destination-out';const g=dx.createRadialGradient(px,py,10,px,py,45*S);g.addColorStop(0,'rgba(0,0,0,.95)');g.addColorStop(1,'rgba(0,0,0,0)');dx.fillStyle=g;dx.fillRect(0,0,W,H);if(camp&&!skipCamp){const kx=(camp.x-cx)*S,ky=(camp.y-cy)*S,g2=dx.createRadialGradient(kx,ky,6,kx,ky,34*S);g2.addColorStop(0,'rgba(0,0,0,.9)');g2.addColorStop(1,'rgba(0,0,0,0)');dx.fillStyle=g2;dx.fillRect(0,0,W,H)}ctx.drawImage(dark,0,0)}
 // HUD
 if(hf>0){ctx.fillStyle='rgba(230,30,50,'+Math.min(.35,hf)+')';ctx.fillRect(0,0,W,H);hf-=dtG}const top=SA+10;
-// vignette
-{const vg=ctx.createRadialGradient(W/2,H/2,Math.min(W,H)*.42,W/2,H/2,Math.max(W,H)*.75);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(10,5,25,.42)');ctx.fillStyle=vg;ctx.fillRect(0,0,W,H)}ctx.font='20px "VT323"';ctx.textBaseline='alphabetic';
+// vignette (pre-rendered; gradient baru tiap frame itu mahal di HP)
+if(vig)ctx.drawImage(vig,0,0);ctx.font='20px "VT323"';ctx.textBaseline='alphabetic';
 // toasts
 for(let i=0;i<toastQ.length;i++){const tt=toastQ[i],age=clk-tt.t0;if(age<0)continue;const a=age<.2?age/.2:age>1.6?Math.max(0,1-(age-1.6)/.4):1,dy=age*14;ctx.globalAlpha=a;ctx.font='12px "Press Start 2P"';tx(tt.s,W/2,H*.36+dy,'#000','center');tx(tt.s,W/2,H*.36+dy-2,tt.c,'center');ctx.globalAlpha=1}
 for(const d of dp){const u=1-d.l/.6,pop=u<.18?u/.18*1.3:1+(1.3-1)*Math.max(0,1-(u-.18)/.2),dy=-(u*26)+(u*u)*10;ctx.save();ctx.translate((d.x-cx)*S,(d.y-cy)*S+dy);ctx.scale(pop,pop);ctx.font=(d.cr?'12px "Press Start 2P"':'20px "VT323"');tx(d.s+(d.cr?'!':''),0,d.cr?Math.sin(clk*40)*1.5:0,d.cr?'#ffd23f':'#fff','center');ctx.restore()}ctx.font='20px "VT323"';
@@ -641,7 +643,7 @@ if(!paused&&!pz)pollPad();
 if(hs>0)hs=Math.max(0,hs-dt);if(hitStop>0){hitStop-=dt}else if(!paused&&!pz)update(dt);if(!$('wd').classList.contains('hide'))drawPv();
 const k=Math.min(1,dt*7);camX+=(p.x+(moving?p.fx*16:0)-W/S/2-camX)*k;camY+=(p.y+(moving?p.fy*16:0)-H/S/2-camY)*k;draw();requestAnimationFrame(loop)}
 function start(d){daily=d?1:0;pz=0;try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();AC.resume()}catch(e){}reset();paused=false;ban.s=daily?'🌍 Dunia Harian: sama untuk semua pemain!':'Geser layar untuk jalan · serangan otomatis';ban.t=4;['ti','ov','up'].forEach(i=>$(i).classList.add('hide'));introDlg()}
-$('wb').onclick=wopen;$('wb2').onclick=wopen;$('wc').onclick=()=>$('wd').classList.add('hide');$('sk').addEventListener('pointerdown',e=>{skillReq=1;e.preventDefault()});$('sk2').addEventListener('pointerdown',e=>{skillReq=2;e.preventDefault()});$('sk3').addEventListener('pointerdown',e=>{skillReq=3;e.preventDefault()});$('ws').onclick=()=>{SV.sw=((SV.sw||0)+1)%((SV.unl||0)+1);save();wsLabel()};$('dgo').onclick=()=>{$('dg').classList.add('hide');paused=(pend>0&&!$('up').classList.contains('hide'))||shopOpen};$('go').onclick=()=>{clearRun();start(0)};$('cont').onclick=()=>restoreRun();$('dl').onclick=()=>start(1);$('re').onclick=()=>start(daily);
+$('wb').onclick=wopen;$('wb2').onclick=wopen;$('wc').onclick=()=>$('wd').classList.add('hide');$('sk').addEventListener('pointerdown',e=>{skillReq=1;e.preventDefault()});$('sk2').addEventListener('pointerdown',e=>{skillReq=2;e.preventDefault()});$('sk3').addEventListener('pointerdown',e=>{skillReq=3;e.preventDefault()});$('ws').onclick=()=>{SV.sw=((SV.sw||0)+1)%((SV.unl||0)+1);save();wsLabel()};$('dgo').onclick=()=>{$('dg').classList.add('hide');paused=(pend>0&&!$('up').classList.contains('hide'))||shopOpen};$('go').onclick=()=>{clearRun();start(0)};$('cont').onclick=()=>restoreRun();$('bbr').onclick=bbShow;$('dl').onclick=()=>start(1);$('re').onclick=()=>start(daily);
 $('endGo').onclick=()=>{$('end').classList.add('hide');SV.ending=1;achvUnlock('ngp');NGP=(SV.ngp||0)+1;SV.ngp=NGP;start(daily);ban.s='✦ NEW GAME+ '+NGP+' — musuh lebih kuat, hadiah lebih besar';ban.t=4};
 $('endShare').onclick=async()=>{const msg='✦ TAMAT! Aku tumbangkan Raja Slime ABADI di Pixel Realm!\n⭐ '+score+' poin · Lv'+p.lvl+' · '+p.kills+' kills · NG+'+(SV.ngp||0)+'\n⌁ Fragmen anomali: '+(SV.frag||0)+'/3\nUdah sampai ending? ▶ '+location.href;lastMsg=msg;try{if(navigator.share){await navigator.share({text:msg})}else{await navigator.clipboard.writeText(msg);toast('📋 Teks ending disalin!')}}catch(e){}};
 $('endFb').onclick=()=>{const fb=prompt('💬 Masukan / bug / ide fitur untuk Pixel Realm:','');if(fb&&fb.trim()){SV.feedback=(SV.feedback||[]).concat(fb.trim().slice(0,280));save();toast('Terima kasih! Masukan lu tersimpan ✓','#7dff9b');$('endFb').textContent='✓ MASUKAN TERSIMPAN'}};
@@ -688,6 +690,15 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&!paused)pz
 $('sh').onclick=async()=>{try{if(navigator.share){await navigator.share({text:lastMsg});return}}catch(e){if(e&&e.name==='AbortError')return}try{await navigator.clipboard.writeText(lastMsg);$('sh').textContent='✔ TERSALIN!'}catch(e){$('rk').textContent=lastMsg}};
 reset();dailyGift();requestAnimationFrame(loop);
 refreshCont();setInterval(refreshCont,3000);
+// ---- black-box recorder: simpan ringkasan tiap detik, buat debug hang di HP ----
+window.__bb={log:[],errs:[]};
+addEventListener('error',e=>{try{window.__bb.errs.push((e.message||'').slice(0,100)+' @'+(e.lineno||0));if(window.__bb.errs.length>10)window.__bb.errs.shift()}catch(x){}});
+addEventListener('unhandledrejection',e=>{try{window.__bb.errs.push('promise: '+String(e.reason||'').slice(0,100))}catch(x){}});
+function bbOverlay(){const o=[];for(const id of['ti','dg','up','ov','wd','shop','end']){const el=document.getElementById(id);if(el&&!el.classList.contains('hide'))o.push(id)}return o.join('+')||'-'}
+function bbTick(){try{const r={t:Math.round(performance.now()/1000),g:Math.round(t||0),fps:Math.round(fpsA||0),p:paused?1:0,pz:pz?1:0,ov:bbOverlay(),en:(en||[]).length,pt:(pt||[]).length,hp:p?p.hp:0,lv:p?p.lvl:0,dead:p&&p.dead?1:0,vis:document.hidden?0:1,ac:AC?AC.state:'-'};window.__bb.log.push(r);if(window.__bb.log.length>90)window.__bb.log.shift();try{localStorage.setItem('pxr_bb',JSON.stringify({log:window.__bb.log.slice(-40),errs:window.__bb.errs,ua:navigator.userAgent.slice(0,90),vw:innerWidth,vh:innerHeight,dpr:devicePixelRatio}))}catch(e){}}catch(e){}}
+setInterval(bbTick,1000);
+function bbReport(){let saved={log:[],errs:[]};try{saved=JSON.parse(localStorage.getItem('pxr_bb')||'{}')||saved}catch(e){}const L=saved.log||[];const last=L[L.length-1]||{};const frozen=L.filter(r=>r.fps>0&&r.fps<15).length;const pausedSec=L.filter(r=>r.p&&!r.dead).length;return 'PIXEL REALM BUG REPORT\n'+(saved.ua||'')+'\n'+(last.ov||'')+' | vw'+(saved.vw||'?')+'x'+(saved.vh||'?')+' dpr'+(saved.dpr||'?')+'\nfps'+last.fps+' paused'+pausedSec+'s frozenFrames'+frozen+' errors'+(saved.errs||[]).length+'\nerrs:'+((saved.errs||[]).slice(-3).join(' | ')||'-')+'\nlast10s:'+JSON.stringify(L.slice(-10))}
+function bbShow(){bbTick();const txt=bbReport();const dg=$('dg');dg.innerHTML='';const pre=document.createElement('pre');pre.style.cssText='white-space:pre-wrap;text-align:left;font-size:11px;max-width:92vw;overflow:auto';pre.textContent=txt;dg.appendChild(pre);const cp=document.createElement('button');cp.textContent='📋 SALIN';cp.onclick=()=>{try{navigator.clipboard.writeText(txt);cp.textContent='✅ TERSALIN'}catch(e){cp.textContent='GAGAL - screenshot aja'}};dg.appendChild(cp);const ok=document.createElement('button');ok.textContent='OK';ok.onclick=()=>{location.reload()};dg.appendChild(ok);$('ti').classList.add('hide');dg.classList.remove('hide')}
 // first-run hint
 if(!SV.seenTutorial){SV.seenTutorial=1;save();setTimeout(()=>{if(!paused){ban.s='👉 Gerak: WASD/joystick · Skill: Q · 🛒 beli mid-run';ban.t=5}},800)}
 
