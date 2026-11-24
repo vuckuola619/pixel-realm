@@ -23,8 +23,8 @@ button:active{transform:translateY(2px)}
 #kn{position:absolute;left:50%;top:50%;width:46px;height:46px;margin:-23px;border-radius:50%;background:rgba(255,255,255,.55);border:3px solid #fff}
 #sk{position:fixed;z-index:5;right:30px;bottom:calc(136px + env(safe-area-inset-bottom,0px));width:62px;height:62px;border-radius:50%;font-size:24px;padding:0;background:#3b82f6;border:3px solid #fff;opacity:.95}
 #sk2,#sk3{position:fixed;z-index:5;width:48px;height:48px;border-radius:50%;font-size:19px;padding:0;background:#3b82f6;border:2px solid rgba(255,255,255,.7);opacity:.9}
-#sk2{right:100px;bottom:calc(146px + env(safe-area-inset-bottom,0px))}
-#sk3{right:170px;bottom:calc(156px + env(safe-area-inset-bottom,0px))}
+#sk2{right:38px;bottom:calc(208px + env(safe-area-inset-bottom,0px))}
+#sk3{right:38px;bottom:calc(264px + env(safe-area-inset-bottom,0px))}
 #sk2.lock,#sk3.lock{background:#2a2440;border-color:#4a4060;filter:grayscale(1);opacity:.45}
 #ub{position:fixed;z-index:5;right:28px;bottom:calc(216px + env(safe-area-inset-bottom,0px));width:54px;height:54px;border-radius:50%;font-size:15px;padding:0;background:#0ea5e9;border:3px solid #fff;opacity:.5;font-weight:bold;color:#fff}
 #wd{background:#1b1730;overflow:auto;touch-action:pan-y;justify-content:flex-start;padding-top:calc(16px + env(safe-area-inset-top,0px))}
@@ -41,7 +41,7 @@ button:active{transform:translateY(2px)}
 <div id="pad"><div id="kn"></div></div><button id="ps">❚❚</button><button id="mt">🔊</button><button id="wk">🎽</button><button id="shp">🛒</button><button id="ub">⚡0%</button><button id="sk">💨</button><button id="sk2">➕</button><button id="sk3">➕</button><button id="ab">⚔️</button>
 <div id="ti" class="ov"><h1>PIXEL<br>REALM</h1>
 <p>Jelajahi pulau, tebas monster, kumpulkan gem, buka peti harta, dan kalahkan 👑 Raja Slime!</p>
-<p style="opacity:.75">Geser jempol di layar / joystick = jalan<br>Serangan otomatis, ⚔️ = tebas manual<br>Tombol biru = skill (PC: Q)<br>PC: WASD / panah + Spasi</p>
+<p style="opacity:.75">Geser jempol di layar / joystick = jalan<br>Serangan otomatis, ⚔️ = tebas manual<br>Tombol biru = skill (PC: Q/E/R)<br>PC: WASD / panah + Spasi</p>
 <p id="gf" style="color:#ffd23f;min-height:18px"></p><p id="bs"></p><button id="ws" style="background:#9be7ff;border-bottom-color:#4a90b8">🗺 Dunia</button><button id="go">MAIN</button><button id="dl" style="background:#ff6b9d;border-bottom-color:#a03060">🌍 TANTANGAN HARIAN</button><button id="wb" style="background:#fff;border-bottom-color:#999">🎽 LEMARI & TOKO</button></div>
 <div id="up" class="ov hide"><h1 style="font-size:26px">PILIH UPGRADE!</h1><div id="opts"></div></div>
 <div id="ov" class="ov hide"><h1 style="font-size:22px">GAME OVER</h1><p id="st"></p><p id="rk" style="color:#ffd23f;font-size:20px"></p><div id="gstats" style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:6px 0 10px"></div><button id="sh" style="background:#ff6b9d; border-bottom-color:#a03060">📤 BAGIKAN SKOR</button><button id="re">MAIN LAGI</button><button id="wb2" style="background:#fff;border-bottom-color:#999">🎽 LEMARI & TOKO</button><button id="pr" style="background:#ffd700;border-bottom-color:#b8860b;display:none">🔁 PRESTIGE</button></div>
@@ -298,7 +298,7 @@ musI=(musI+3)%12}
 setInterval(function(){if(!paused&&!pz&&!document.hidden)playMusic()},900);
 // ---------- input ----------
 const keys={};let js={on:false,id:-1,ox:0,oy:0,x:0,y:0},atkHeld=false;
-addEventListener('keydown',e=>{keys[e.key.toLowerCase()]=1;const lk=e.key.toLowerCase();if(lk==='q')skillReq=1;else if(lk==='w')skillReq=2;else if(lk==='e')skillReq=3;if(e.key==='p'||e.key==='P')pz=!pz;if(e.key===' ')atkHeld=true;if(e.key===' '||e.key.startsWith('Arrow'))e.preventDefault()});
+addEventListener('keydown',e=>{keys[e.key.toLowerCase()]=1;const lk=e.key.toLowerCase();if(lk==='q')skillReq=1;else if(lk==='e')skillReq=2;else if(lk==='r')skillReq=3;if(e.key==='p'||e.key==='P')pz=!pz;if(e.key===' ')atkHeld=true;if(e.key===' '||e.key.startsWith('Arrow'))e.preventDefault()});
 addEventListener('keyup',e=>{keys[e.key.toLowerCase()]=0;if(e.key===' ')atkHeld=false});
 addEventListener('pointerdown',e=>{if(e.target.closest('button,.ov')||js.on)return;let ox=e.clientX,oy=e.clientY;const r=$('pad').getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;if(Math.hypot(ox-cx,oy-cy)<90){ox=cx;oy=cy}
 js={on:true,id:e.pointerId,ox,oy,x:0,y:0};dragTo(e)});
@@ -350,7 +350,9 @@ k=k||(t<25?'s':t<45?(q<.7?'s':'b'):t<70?(q<.45?'s':q<.8?'b':'a'):t<100?(q<.3?'s'
 if(k!=='k'&&rnd()<.04*(1+(cyc||0)*.5+(Q.round||1)*.3)){e.el=1;e.hp=Math.ceil(e.hp*2.5);e.sp*=1.3;e.dm+=1;e.pts*=4;e.xp*=3}
 e.mx=e.hp;en.push(e);return e}k=k==='k'?'k':null}}
 function burst(x,y,c,n){for(let i=0;i<n*Math.max(.5,QMD);i++){const a=rnd()*6.283,s=20+rnd()*50;pt.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,l:.4+rnd()*.3,c,z:3,vz:50+rnd()*70})}}
-let hitStop=0,toastQ=[],toastT=0,mb=[],endT=0,endPh=0,endDone=0,NGP=0;
+let hitStop=0,toastQ=[],toastT=0,mb=[],endT=0,endPh=0,endDone=0,NGP=0;let stuckT=0;
+const BAIT=['⌁ ...retakan aneh di langit. sesuatu mengawasi...','⌁ 00010010 :: REALM-TIDAK-STABIL :: 01001000','⌁ "kau pikir ini cuma game?" — suara dari kegelapan','⌁ anomali terdeteksi di sekitar portal... dekati mereka','⌁ fragmen anomali: 3 buah. pintu kelima menunggu'];
+let baitT=40,baitI=0;
 const ENDTXT=['Para slime berhenti bergerak...','...lalu satu per satu, tubuh mereka larut menjadi cahaya.','Pulau yang dulu kelabu mulai bernapas lagi.','Tapi di ufuk timur, langit retak seperti kaca.','Sesuatu yang bukan slime... mengawasi dari balik retakan itu.','✦ Akhir dari awal. ✦'];function toast(s,c){toastQ.push({s,c:c||'#ffd23f',t0:clk});if(toastQ.length>3)toastQ.shift();sfx(1200,.08,'square',.04,1600)}function kill(e){if(e.m||e.el||e.k==='k')hitStop=.045;combo++;if(combo>=5&&combo%5===0){toast('🔥 COMBO x'+combo+'!','#ff9f43');score+=combo*2;p.coins+=1;if(combo>(SV.mxc||0))SV.mxc=combo}comboT=1.6;if(combo>0&&combo%5===0){p.coins+=2;score+=25;if(combo%15===0){p.spd*=1.02;ban.s='🔥 STREAK x'+combo+'! +2🪙 +speed';ban.t=1.4}else ban.s='🔥 Streak x'+combo+' +2🪙';ban.t=Math.max(ban.t,1.1)}qprog('kill',1);if(e.k)qprog('ks',1,e.k);if(e.el)qprog('elite',1);for(const a of al){a.xp=(a.xp||0)+1+(e.m||e.el?2:0);const nl=1+Math.floor((a.xp||0)/12);if(nl>(a.lv||1)){a.lv=nl;const g=1+(a.lv-1)*.35;a.dmgB=g;a.spdB=g;if(a.lv===3&&!a.evo){a.evo=1;ban.s='🐾 '+FRIENDS[a.k].n+' berevolusi!';ban.t=2.2;burst(a.x,a.y,'#ffd23f',24);sfx(660,.3,'sine',.06,1320)}else{ban.s='🐾 Pet naik lv '+a.lv+'!';ban.t=1.2;burst(a.x,a.y,'#7dff9b',10)}}}if(e.k==='k')qprog('boss',1);
 // glitch: 0.4% per enemy kill
 if(e.k!=='gl'&&rnd()<.004&&!en.some(x=>x.k==='gl')){const gl=spawn('gl');if(gl)toast('⚠️ Anomali terdeteksi... sesuatu mengawasimu','#05d9e8')}
@@ -383,7 +385,8 @@ if(score>=3000){$('pr').style.display='';$('pr').textContent='🔁 PRESTIGE (+'+
 lastMsg='🎮 Pixel Realm — '+(daily?'Tantangan Harian: ':'')+rk+'!\n⭐ '+score+' poin · Lv'+p.lvl+' · '+p.kills+' kills · '+Math.floor(stats.dt/60)+'m'+Math.floor(stats.dt%60)+'s\nPet: '+FRIENDS[(al[0]&&al[0].k)||3].n.replace(/^\S+\s/,'')+' Lv'+((al[0]&&al[0].lv)||1)+' · Combo x'+(SV.mxc||0)+'\nBisa ngalahin aku? ▶ '+location.href;}
 
 function update(dt){
-t+=dt;let ix=(keys.d||keys.arrowright?1:0)-(keys.a||keys.arrowleft?1:0)+js.x,iy=(keys.s||keys.arrowdown?1:0)-(keys.w||keys.arrowup?1:0)+js.y,l=Math.hypot(ix,iy);
+t+=dt;{const inp=(keys.d||keys.a||keys.w||keys.s||keys.arrowright||keys.arrowleft||keys.arrowup||keys.arrowdown||Math.hypot(js.x,js.y)>.2)?1:0,go=Math.abs(p.vx)+Math.abs(p.vy)>.5?1:0;if(inp&&!go)stuckT+=dt;else stuckT=0;if(stuckT>2.5){stuckT=0;keys={};js.on=false;js.x=js.y=0;p.vx=p.vy=0;toast('⟳ input di-reset · coba lagi')}}
+let ix=(keys.d||keys.arrowright?1:0)-(keys.a||keys.arrowleft?1:0)+js.x,iy=(keys.s||keys.arrowdown?1:0)-(keys.w||keys.arrowup?1:0)+js.y,l=Math.hypot(ix,iy);
 if(l>1){ix/=l;iy/=l;l=1}moving=l>.15;if(!moving){p.vx=0;p.vy=0}
 if(moving){p.fx=ix;p.fy=iy;if(Math.abs(ix)>.2)p.face=ix>0?1:-1;p.wk+=dt*12;if(rnd()<.3)pt.push({x:p.x+(rnd()-.5)*5-p.fx*3,y:p.y+6,vx:-p.fx*10+(rnd()-.5)*8,vy:-8-rnd()*6,l:.35+rnd()*.15,c:BIO[WLD].dust||'#c9b8a0',z:0,vz:20})}
 {const k=Math.min(1,dt*BIO[WLD].fr);p.mx=(p.mx||0)+((moving?ix*p.spd:0)-(p.mx||0))*k;p.my=(p.my||0)+((moving?iy*p.spd:0)-(p.my||0))*k;if(Math.abs(p.mx)+Math.abs(p.my)<1)p.mx=p.my=0;mv(p,p.mx*dt,p.my*dt,4);p.vx=p.mx;p.vy=p.my}p.atk-=dt;p.inv-=dt;swing-=dt;for(let i=0;i<3;i++)if(p.scd[i]>0)p.scd[i]-=dt;nv-=dt;if(p.sh>0){p.sh-=dt;p.inv=Math.max(p.inv,.1)}if(p.dash>0){p.dash-=dt;mv(p,p.dx*230*dt,p.dy*230*dt,4);p.inv=Math.max(p.inv,.1);ghosts.push({x:p.x,y:p.y,f:p.face,l:.22,L:.22});if(rnd()<.5)pt.push({x:p.x,y:p.y+6,vx:-p.dx*20,vy:(rnd()-.5)*12,l:.3,c:'#9be7ff',z:0,vz:16})}if(skillReq){const si=skillReq-1;skillReq=0;useSkill(si)}shake=Math.max(0,shake-dt);comboT-=dt;if(comboT<=0)combo=0;
@@ -429,6 +432,7 @@ for(const k of pk){if(k.vx===undefined){k.vx=(rnd()-.5)*90;k.vy=(rnd()-.5)*90;k.
 if(d<7){k.dead=1;if(k.t==='g'){p.xp+=k.v;score+=2;sfx(900,.06,'sine',.04);while(p.xp>=p.need){p.xp-=p.need;p.lvl++;p.need=Math.round(p.need*1.3+2);p.hp=Math.min(p.max,p.hp+2);SV.skpts=(SV.skpts||0)+1;burst(p.x,p.y,'#ffd23f',28);burst(p.x,p.y,'#4fc3f7',16);ban.s='⭐ LEVEL '+p.lvl+'! +1 🔮 poin skill';ban.t=1.8;askUp()}}else if(k.t==='c'){p.coins++;score+=10;qprog('coin',1);sfx(1200,.08,'sine',.04,1700)}else{p.hp=Math.min(p.max,p.hp+1);sfx(500,.15,'sine',.05,800)}}}
 pk=pk.filter(k=>!k.dead);if(pk.length>160)pk.splice(0,pk.length-160);
 if(pt.length>380*Math.max(.5,QMD))pt.splice(0,pt.length-380|0);
+if(!p.dead&&!daily){baitT-=dt;if(baitT<=0){baitT=45+rnd()*30;toast(BAIT[baitI%BAIT.length]);baitI++;if(baitI===1)sfx(120,.5,'sawtooth',.03,60)}}
 for(const c of ch)if(!c.o&&Math.hypot(c.x-p.x,c.y-p.y)<12){c.o=1;score+=50;p.coins+=3;qprog('chest',1);burst(c.x,c.y,'#ffd23f',24);if(rnd()<.3)rollShopToken();askUp()}
 for(const m of mb){if(Math.hypot(m.x-p.x,m.y-p.y)<14){m.l=0;const roll=rnd();let msg='';
 if(roll<.18){const amt=40+Math.floor(rnd()*60);p.coins+=amt;msg='🎁 KOTAK MISTERI: +'+amt+' 🪙!';burst(m.x,m.y,'#ffd23f',30)}
@@ -530,6 +534,7 @@ function drawPk(k){const x=Math.round(k.x),y=Math.round(k.y-(k.z||0)+((k.z||0)>0
 if(k.t==='g'){R('#1a1020',x-3,y-1,7,3);R('#1a1020',x-1,y-4,3,9);R('#1a1020',x-2,y-3,5,7);R('#4fc3f7',x-1,y-3,3,7);R('#4fc3f7',x-2,y-1,5,3);R('#e1f5fe',x-1,y-2,1,2)}
 else if(k.t==='c'){const w=Math.max(1,Math.round(Math.abs(Math.cos(clk*6+k.x))*5));R('#8a5a00',x-(w>>1)-1,y-3,w+2,7);R('#ffd23f',x-(w>>1),y-2,w,5);R('#fff6a8',x-(w>>1),y-2,1,2)}
 else{heart(x-4,y-4,1,'#1a1020');heart(x-4,y-4,1,'#ff4d6d');R('#ffc0cb',x-3,y-3,1,1)}}
+const tx=(s,x,y,c,al)=>{ctx.textAlign=al||'left';ctx.fillStyle='#000';ctx.fillText(s,x+1,y+1);ctx.fillStyle=c||'#fff';ctx.fillText(s,x,y)};
 function draw(){
 ctx.setTransform(1,0,0,1,0,0);R('#1b1730',0,0,W,H);
 const sk=shake>0?3:0,cx=Math.round(camX)+Math.round((rnd()-.5)*sk),cy=Math.round(camY)+Math.round((rnd()-.5)*sk);
@@ -570,7 +575,6 @@ if(hf>0){ctx.fillStyle='rgba(230,30,50,'+Math.min(.35,hf)+')';ctx.fillRect(0,0,W
 {const vg=ctx.createRadialGradient(W/2,H/2,Math.min(W,H)*.42,W/2,H/2,Math.max(W,H)*.75);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(10,5,25,.42)');ctx.fillStyle=vg;ctx.fillRect(0,0,W,H)}ctx.font='20px "VT323"';ctx.textBaseline='alphabetic';
 // toasts
 for(let i=0;i<toastQ.length;i++){const tt=toastQ[i],age=clk-tt.t0;if(age<0)continue;const a=age<.2?age/.2:age>1.6?Math.max(0,1-(age-1.6)/.4):1,dy=age*14;ctx.globalAlpha=a;ctx.font='12px "Press Start 2P"';tx(tt.s,W/2,H*.36+dy,'#000','center');tx(tt.s,W/2,H*.36+dy-2,tt.c,'center');ctx.globalAlpha=1}
-const tx=(s,x,y,c,al)=>{ctx.textAlign=al||'left';ctx.fillStyle='#000';ctx.fillText(s,x+1,y+1);ctx.fillStyle=c||'#fff';ctx.fillText(s,x,y)};
 for(const d of dp){const u=1-d.l/.6,pop=u<.18?u/.18*1.3:1+(1.3-1)*Math.max(0,1-(u-.18)/.2),dy=-(u*26)+(u*u)*10;ctx.save();ctx.translate((d.x-cx)*S,(d.y-cy)*S+dy);ctx.scale(pop,pop);ctx.font=(d.cr?'12px "Press Start 2P"':'20px "VT323"');tx(d.s+(d.cr?'!':''),0,d.cr?Math.sin(clk*40)*1.5:0,d.cr?'#ffd23f':'#fff','center');ctx.restore()}ctx.font='20px "VT323"';
 {const low=p.hp<=2&&p.hp>0,pu=low?1+Math.sin(clk*10)*.12:1;for(let i=0;i<p.max;i++){const x=10+(i%8)*17,y=top+Math.floor(i/8)*14;if(low&&i<p.hp){ctx.save();ctx.translate(x,y);ctx.scale(pu,pu);heart(-1,-1,2,'#000');heart(0,0,2,'#ff4d6d');ctx.restore()}else{heart(x-1,y-1,2,'#000');heart(x,y,2,i<p.hp?'#ff4d6d':'#4a3550')}}}
 const hy=top+Math.ceil(p.max/8)*14+4,bw=Math.min(W-120,200);R('#000',10,hy,bw+4,10);R('#4fc3f7',12,hy+2,bw*p.xp/p.need,6);R('#b3e5fc',12,hy+2,bw*p.xp/p.need,2);
