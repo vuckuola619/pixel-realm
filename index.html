@@ -322,12 +322,15 @@ setInterval(function(){if(!paused&&!pz&&!document.hidden&&AC&&AC.state==='runnin
 const keys={};let js={on:false,id:-1,ox:0,oy:0,x:0,y:0},atkHeld=false;
 addEventListener('keydown',e=>{keys[e.key.toLowerCase()]=1;const lk=e.key.toLowerCase();if(lk==='q')skillReq=1;else if(lk==='e')skillReq=2;else if(lk==='r')skillReq=3;if(e.key==='p'||e.key==='P')pz=!pz;if(e.key===' ')atkHeld=true;if(e.key===' '||e.key.startsWith('Arrow'))e.preventDefault()});
 addEventListener('keyup',e=>{keys[e.key.toLowerCase()]=0;if(e.key===' ')atkHeld=false});
-addEventListener('pointerdown',e=>{if(e.target.closest('button,.ov')||js.on)return;let ox=e.clientX,oy=e.clientY;const r=$('pad').getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;if(Math.hypot(ox-cx,oy-cy)<90){ox=cx;oy=cy}
+addEventListener('pointerdown',e=>{if(e.target&&e.target.closest&&e.target.closest('button,.ov'))return;if(js.on&&performance.now()-jsLast<400)return;let ox=e.clientX,oy=e.clientY;const r=$('pad').getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;if(Math.hypot(ox-cx,oy-cy)<90){ox=cx;oy=cy}
 js={on:true,id:e.pointerId,ox,oy,x:0,y:0};dragTo(e)});
-function dragTo(e){let dx=e.clientX-js.ox,dy=e.clientY-js.oy,l=Math.hypot(dx,dy),m=40;if(l>m){js.ox+=dx/l*(l-m);js.oy+=dy/l*(l-m);dx=dx/l*m;dy=dy/l*m}js.x=dx/m;js.y=dy/m}
+function dragTo(e){jsLast=performance.now();let dx=e.clientX-js.ox,dy=e.clientY-js.oy,l=Math.hypot(dx,dy),m=40;if(l>m){js.ox+=dx/l*(l-m);js.oy+=dy/l*(l-m);dx=dx/l*m;dy=dy/l*m}js.x=dx/m;js.y=dy/m}
 addEventListener('pointermove',e=>{if(js.on&&e.pointerId===js.id)dragTo(e)});
 const upf=e=>{if(e.pointerId===js.id){js.on=false;js.x=js.y=0}};addEventListener('pointerup',upf);addEventListener('pointercancel',upf);
-document.addEventListener('touchmove',e=>{if(!e.target.closest('#wd'))e.preventDefault()},{passive:false});
+// fallback kalau pointerup dicuri sistem (gesture nav / notifikasi Android): touchend + watchdog
+let jsLast=0;addEventListener('touchend',e=>{if(js.on){js.on=false;js.x=js.y=0}},{passive:true});addEventListener('touchcancel',()=>{js.on=false;js.x=js.y=0},{passive:true});
+addEventListener('blur',()=>{js.on=false;js.x=js.y=0;atkHeld=false;keys={}});
+document.addEventListener('touchmove',e=>{if(!(e.target&&e.target.closest&&e.target.closest('#wd')))e.preventDefault()},{passive:false});
 const ab=$('ab');ab.addEventListener('pointerdown',e=>{atkHeld=true;e.preventDefault()});['pointerup','pointerleave','pointercancel'].forEach(k=>ab.addEventListener(k,()=>atkHeld=false));
 // ---------- state ----------
 let ghosts=[],hitFlash=0,matPop={},matPopT=0;
@@ -639,7 +642,7 @@ function loop(n){const dt=Math.min(.05,(n-last)/1000);last=n;dtG=dt;clk+=dt;
 // adaptive quality: track avg fps, step QMD up/down to hold ~55fps
 fpsA=fpsA*.95+(1/Math.max(dt,.001))*.05;
 if(!paused&&!pz){if(fpsA<45&&QMD>.4&&window.qOv==null){QMD=Math.max(.4,QMD-.08)}else if(fpsA>56&&QMD<1&&window.qOv==null){QMD=Math.min(1,QMD+.04)}}
-if(!paused&&!pz)pollPad();
+if(js.on&&performance.now()-jsLast>2500){js.on=false;js.x=js.y=0}if(!paused&&!pz)pollPad();
 if(hs>0)hs=Math.max(0,hs-dt);if(hitStop>0){hitStop-=dt}else if(!paused&&!pz)update(dt);if(!$('wd').classList.contains('hide'))drawPv();
 const k=Math.min(1,dt*7);camX+=(p.x+(moving?p.fx*16:0)-W/S/2-camX)*k;camY+=(p.y+(moving?p.fy*16:0)-H/S/2-camY)*k;draw();requestAnimationFrame(loop)}
 function start(d){daily=d?1:0;pz=0;try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();AC.resume()}catch(e){}reset();paused=false;ban.s=daily?'🌍 Dunia Harian: sama untuk semua pemain!':'Geser layar untuk jalan · serangan otomatis';ban.t=4;['ti','ov','up'].forEach(i=>$(i).classList.add('hide'));introDlg()}
