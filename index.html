@@ -9,7 +9,7 @@ html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);overflow:hi
 canvas{display:block;width:100%;height:100%;image-rendering:pixelated;touch-action:none}
 #sa{position:fixed;top:0;left:0;height:env(safe-area-inset-top,0px);width:1px}
 .ov{position:fixed;inset:0;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:rgba(10,8,25,.8);text-align:center;padding:20px}
-.ov.hide{display:none}
+.hide{display:none!important}.ov.hide{display:none}
 h1{margin:0;font-family:"Press Start 2P",monospace;font-size:26px;line-height:1.4;color:var(--acc);text-shadow:3px 3px 0 #e63946,6px 6px 0 #000;letter-spacing:1px;animation:titleBob 2.4s ease-in-out infinite}
 @keyframes titleBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
 p{margin:0;font-size:14px;line-height:1.5;max-width:320px}
@@ -152,10 +152,10 @@ SV.slots=SV.slots||[0,null,null];SV.skpts=SV.skpts||0;SV.tree=SV.tree||{};SV.fra
 SV.own.role=SV.own.role||[0];SV.own.friend=SV.own.friend||[0];SV.sel.role=SV.sel.role||0;SV.sel.f1=SV.sel.f1||0;SV.sel.f2=SV.sel.f2||0;SV.unl=SV.unl||0;SV.sw=SV.sw||0;
 const save=()=>{try{localStorage.setItem('pxr2',JSON.stringify(SV))}catch(e){}};
 // ---- run snapshot (save-state): simpan progress run biar gak hilang kalau app di-kill / hang ----
-function snapRun(){try{SV.run={x:p.x,y:p.y,hp:p.hp,max:p.max,lvl:p.lvl,xp:p.xp,need:p.need,coins:p.coins,kills:p.kills,score,wld:WLD,t,skills:p.skills.slice(),scd:p.scd.slice(),scdMax:p.scdMax.slice(),skpts:p.skpts||0,spd:p.spd,dmg:p.dmg,range:p.range,pend:0,ts:Date.now()};save()}catch(e){}}
+function snapRun(){try{SV.run={x:p.x,y:p.y,hp:p.hp,max:p.max,lvl:p.lvl,xp:p.xp,need:p.need,coins:p.coins,kills:p.kills,score,wld:WLD,t,skills:p.skills.slice(),scd:p.scd.slice(),scdMax:p.scdMax.slice(),skpts:p.skpts||0,spd:p.spd,dmg:p.dmg,range:p.range,pend:0,ts:Date.now()};save();refreshCont()}catch(e){}}
 function hasRun(){const r=SV.run;return !!(r&&r.ts&&Date.now()-r.ts<1000*60*60*6&&!p.dead)}
-function clearRun(){delete SV.run;save()}
-function restoreRun(){const r=SV.run;if(!r)return false;start(0);$('dgo').click();paused=false;pz=0;WLD=r.wld||0;useBiome(WLD);gen();p.x=r.x;p.y=r.y;p.hp=r.hp;p.max=r.max;p.lvl=r.lvl;p.xp=r.xp;p.need=r.need;p.coins=r.coins;p.kills=r.kills;score=r.score;t=r.t||0;p.skills=(r.skills||[]).slice();p.scd=(r.scd||[]).slice();p.scdMax=(r.scdMax||[]).slice();p.skpts=r.skpts||0;p.spd=r.spd;p.dmg=r.dmg;p.range=r.range;en=[];spawnWorldObjs();setupWorld();camX=p.x-W/S/2;camY=p.y-H/S/2;ban.s='▶ Run dilanjutkan! Lv'+p.lvl+' · '+p.kills+' kills';ban.t=3;return true}
+function clearRun(){delete SV.run;save();refreshCont()}
+function restoreRun(){const r=SV.run;if(!r)return false;SV.sw=r.wld||0;start(0);$('dgo').click();paused=false;pz=0;p.x=r.x;p.y=r.y;p.hp=r.hp;p.max=r.max;p.lvl=r.lvl;p.xp=r.xp;p.need=r.need;p.coins=r.coins;p.kills=r.kills;score=r.score;t=r.t||0;p.skills=(r.skills||[]).slice();p.scd=(r.scd||[]).slice();p.scdMax=(r.scdMax||[]).slice();p.skpts=r.skpts||0;p.spd=r.spd;p.dmg=r.dmg;p.range=r.range;en=[];spawnWorldObjs();setupWorld();camX=p.x-W/S/2;camY=p.y-H/S/2;ban.s='▶ Run dilanjutkan! Lv'+p.lvl+' · '+p.kills+' kills';ban.t=3;return true}
 function refreshCont(){const el=$('cont');if(!el)return;el.classList.toggle('hide',!hasRun())}
 function buildP(){const sk=SKINS[SV.sel.skin],ar=ARMS[SV.sel.armor],cu=SV.cu||{};
 const pl={...PAL,s:cu.s||sk.s,S:cu.S||sk.S,h:ar.helm?'#8d9aa5':(cu.h||sk.h),H:ar.helm?'#c7d2da':(cu.H||sk.H),b:cu.b||ar.b,B:cu.B||ar.B,y:cu.y||ar.y};
